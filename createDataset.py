@@ -30,13 +30,13 @@ def showPredictedTime(status, fullStatus):
 	print(f"\n{(time.time() - lastTime) * fullStatus / status}초 예상\n")
 
 def generateHanguelImages():
-
 	startCheck()
 	for i, txt  in enumerate(kors):
 		print(f"\r{i + 1} / {len(kors)} | {txt}   ", end='')
-		if i == 10:
+		if i == 100:
 			showPredictedTime(i, len(kors))
 
+		os.makedirs(f"./datasets/{txt}")
 		for ii, font in enumerate(fonts):
 			img = Image.new(mode="L", size=IMAGE_SIZE, color=BACKGROUND_COLOR)
 			drawing = ImageDraw.Draw(img)
@@ -48,7 +48,7 @@ def generateHanguelImages():
 			)
 			for angle in range(-10, 11, 2):
 				temp = img.rotate(angle, fillcolor=BACKGROUND_COLOR)
-				temp.save(f'./datasets/{txt},{ii},{angle}.png')
+				temp.save(f'./datasets/{txt}/{ii},{angle}.png')
 
 if __name__ == "__main__":
 	generateHanguelImages()
