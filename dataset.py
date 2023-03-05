@@ -2,6 +2,7 @@ import os
 import tensorflow as tf
 import math
 import numpy as np
+import copy
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
 # tensorflow -> keras -> utils -> Sequence 주석
@@ -62,36 +63,44 @@ class CIFAR10Sequence(tf.keras.utils.Sequence):
 """
 
 class DataGenerator(tf.keras.utils.Sequence):
-	def __init__(self, dataX, dataY, batchSize = 128, shuffle = True) -> None:
+	def __init__(self, dataX, dataY, classes, batchSize = 256, shuffle = True) -> None:
 		self.x, self.y = dataX, dataY
+		# self.batchSize = math.floor(len(self.x) / batchSize)
 		self.batchSize = batchSize
+		self.numSamples = len(dataX)
 
-		self.index2char = np.unique(dataY)
-		self.char2index = {char : i for i, char in enumerate(self.index2char)}
+		self.classes = classes
+		self.char2index = {char : i for i, char in enumerate(self.classes)}
+		# standardArr = np.array([0.] * self.numClasses)
+		# for i, char in enumerate(np.unique(dataY)):
+		# 	arr = copy.deepcopy(standardArr)
+		# 	arr[i] = 1.
+		# 	self.char2index[char] = arr
 
-		self.numClasses = len(dataX)
-		self.numSamples = len(self.index2char)
+		self.numClasses = len(self.classes)
 
 		self.shuffle = shuffle
 		self.on_epoch_end()
-		print(f"{self.numSamples} 이미지가 로딩 됨")
+		print(f"{len(self.x)} 이미지가 로딩 됨")
 
 	def __len__(self):
-		# print("len")
-		# return np.floor(self.numClasses / self.batchSize)
-		return math.floor(self.numClasses / self.batchSize)
+		return math.floor(self.numSamples / self.batchSize)
 	
 	def __getitem__(self, index):
 		indices = self.indices[index * self.batchSize : (index + 1) * self.batchSize]
-
 		posX = [self.x[i] for i in indices]
-		batchY = [self.char2index.get(self.y[i]) for i in indices]
+		batchY = [self.char2index[self.y[i]] for i in indices]
 		batchX = []
 		for pos in posX:
-			x = load_img(pos, target_size = (48, 48))
+			x = load_img(pos, target_size = (32, 32))
 			x = img_to_array(x)
 			x = x / 255.
 			batchX.append(x)
+		# print("\n\n\n\n\n")
+		# print(indices)
+		# print(batchX[0].shape)
+		# print("\n\n\n\n\n")
+
 		return np.array(batchX), np.array(batchY)
 	
 	def on_epoch_end(self):
